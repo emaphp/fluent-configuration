@@ -1,0 +1,19 @@
+{
+    "name": "emaphp/fluent-configuration",
+    "type": "library",
+    "description": "A fluent configuration trait for PHP",
+    "keywords": ["php", "fluent", "configuration", "trait"],
+    "license": "MIT License",
+    "authors": [
+        {
+            "name": "Emmanuel Antico",
+            "email": "emmanuel.antico@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.4.0"
+    },
+    "autoload": {
+        "classmap": [ "lib/FluentConfiguration.php" ]
+    }
+}
