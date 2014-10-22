@@ -79,10 +79,11 @@ class FluentInterfaceTest extends \PHPUnit_Framework_TestCase {
 
 		$conf = new ConfigurationFixture();
 		$conf->setConfig(['queue' => 'first_val']);
-		$pushed = $conf->append('queue', 'second_val');
-		$this->assertCount(2, $pushed->getOption('queue'));
+		$pushed = $conf->append('queue', 'second_val', 'third_val');
+		$this->assertCount(3, $pushed->getOption('queue'));
 		$this->assertContains('first_val', $pushed->getOption('queue'));
 		$this->assertContains('second_val', $pushed->getOption('queue'));
+		$this->assertContains('third_val', $pushed->getOption('queue'));
 	}
 }
 ?>

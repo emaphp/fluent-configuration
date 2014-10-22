@@ -122,16 +122,21 @@ trait FluentConfiguration {
 		if (!is_string($key) || empty($key)) {
 			throw new \InvalidArgumentException("Option name must be a valid string");
 		}
+		
+		$args = func_get_args();
+		array_shift($args);
 	
 		if (array_key_exists($key, $obj->config)) {
 			if (!is_array($obj->config[$key])) {
 				$obj->config[$key] = [$obj->config[$key]];
 			}
-				
-			array_push($obj->config[$key], $value);
+			
+			foreach ($args as $arg) {
+				array_push($obj->config[$key], $arg);
+			}
 		}
 		else {
-			$obj->config[$key] = [$value];
+			$obj->config[$key] = $args;
 		}
 	
 		return $obj;
