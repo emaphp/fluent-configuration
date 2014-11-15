@@ -13,7 +13,7 @@ A fluent configuration trait for PHP
 ```json
 {
     "require": {
-        "emaphp/fluent-configuration": "1.0.*"
+        "emaphp/fluent-configuration": "1.1.*"
     }
 }
 ```
@@ -67,6 +67,15 @@ $config = new ConfigurationContainer();
 $config->setOption('list', 'item1');
 $config = $config->append('list', 'item2', 'item3');
 $config->getOption('list'); // ['item1', 'item2', 'item3']
+
+//preserve instance
+$config = new ConfigurationContainer();
+$config->preserveInstance = true;
+$config->setOption('test1', 'val1');
+$newConf = $config->option('test2', 'val2');
+$config->hasOption('test1'); // true
+$config->hasOption('test2'); // true
+$newConf->getOption('test2') == $config->getOption('test2'); // true
 ```
 <br/>
 ###License

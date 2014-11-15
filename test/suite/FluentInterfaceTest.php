@@ -85,5 +85,35 @@ class FluentInterfaceTest extends \PHPUnit_Framework_TestCase {
 		$this->assertContains('second_val', $pushed->getOption('queue'));
 		$this->assertContains('third_val', $pushed->getOption('queue'));
 	}
+	
+	public function testPreserveInstance() {
+		$conf = new ConfigurationFixture();
+		$conf->preserveInstance = true;
+		$conf->setOption('test1', 'val1');
+		$newConf = $conf->option('non-transient', 'val2');
+		
+		$this->assertTrue($newConf->hasOption('test1'));
+		$this->assertTrue($newConf->hasOption('non-transient'));
+		$this->assertEquals('val1', $newConf->getOption('test1'));
+		$this->assertEquals('val2', $newConf->getOption('non-transient'));
+		
+		$this->assertTrue($conf->hasOption('test1'));
+		$this->assertTrue($conf->hasOption('non-transient'));
+		$this->assertEquals('val1', $conf->getOption('test1'));
+		$this->assertEquals('val2', $conf->getOption('non-transient'));
+		
+		$this->assertEquals($newConf, $conf);
+		
+		$conf = new ConfigurationFixture();
+		$conf->preserveInstance = true;
+		$conf->merge(['test3' => 'val3', 'test4' => 'val4']);
+		$this->assertTrue($conf->hasOption('test3'));
+		$this->assertTrue($conf->hasOption('test4'));
+		$this->assertEquals('val3', $conf->getOption('test3'));
+		$conf->discard('test4');
+		$this->assertFalse($conf->hasOption('test4'));
+		$conf->append('values', 1, 2, 3);
+		$this->assertEquals([1, 2, 3], $conf->getOption('values'));
+	}
 }
 ?>

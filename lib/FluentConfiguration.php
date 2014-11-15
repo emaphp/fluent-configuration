@@ -11,6 +11,12 @@ trait FluentConfiguration {
 	protected $config = [];
 	
 	/**
+	 * Indicates if an instance gets cloned whenever a new configuration is applied
+	 * @var boolean
+	 */
+	public $preserveInstance = false;
+	
+	/**
 	 * Sets an instance configuration array
 	 * @param array $config
 	 */
@@ -33,9 +39,8 @@ trait FluentConfiguration {
 	 * @throws \InvalidArgumentException
 	 */
 	public function setOption($name, $value) {
-		if (!is_string($name) || empty($name)) {
+		if (!is_string($name) || empty($name))
 			throw new \InvalidArgumentException("Option name must be a valid string");
-		}
 	
 		$this->config[$name] = $value;
 	}
@@ -47,13 +52,11 @@ trait FluentConfiguration {
 	 * @return mixed
 	 */
 	public function getOption($name) {
-		if (!is_string($name) || empty($name)) {
+		if (!is_string($name) || empty($name))
 			throw new \InvalidArgumentException("Option name must be a valid string");
-		}
 	
-		if (array_key_exists($name, $this->config)) {
+		if (array_key_exists($name, $this->config))
 			return $this->config[$name];
-		}
 	
 		return null;
 	}
@@ -76,7 +79,7 @@ trait FluentConfiguration {
 	 * @return FluentConfiguration
 	 */
 	public function merge(array $values, $invert = false) {
-		$obj = clone $this;
+		$obj = $this->preserveInstance ? $this : clone $this;
 		$obj->config = ($invert) ? array_merge($values, $this->config) : array_merge($this->config, $values);
 		return $obj;
 	}
@@ -88,7 +91,7 @@ trait FluentConfiguration {
 	 */
 	public function discard() {
 		$filter = array_flip(func_get_args());
-		$obj = clone $this;
+		$obj = $this->preserveInstance ? $this : clone $this;
 		$obj->config = array_diff_key($this->config, $filter);
 		return $obj;
 	}
@@ -102,9 +105,8 @@ trait FluentConfiguration {
 	 * @return FluentConfiguration
 	 */
 	public function option($name, $value) {
-		if (!is_string($name) || empty($name)) {
+		if (!is_string($name) || empty($name))
 			throw new \InvalidArgumentException("Option name must be a valid string");
-		}
 	
 		return $this->merge([$name => $value]);
 	}
@@ -117,27 +119,23 @@ trait FluentConfiguration {
 	 * @return FluentConfiguration
 	 */
 	public function append($key, $value) {
-		$obj = clone $this;
-	
 		if (!is_string($key) || empty($key)) {
 			throw new \InvalidArgumentException("Option name must be a valid string");
 		}
-		
+
 		$args = func_get_args();
-		array_shift($args);
-	
+		array_shift($args);		
+		$obj = $this->preserveInstance ? $this : clone $this;
+		
 		if (array_key_exists($key, $obj->config)) {
-			if (!is_array($obj->config[$key])) {
+			if (!is_array($obj->config[$key]))
 				$obj->config[$key] = [$obj->config[$key]];
-			}
 			
-			foreach ($args as $arg) {
+			foreach ($args as $arg)
 				array_push($obj->config[$key], $arg);
-			}
 		}
-		else {
+		else
 			$obj->config[$key] = $args;
-		}
 	
 		return $obj;
 	}
