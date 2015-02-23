@@ -64,22 +64,43 @@ class FluentInterfaceTest extends \PHPUnit_Framework_TestCase {
 		$this->assertEquals(2, $added->getOption('x'));
 	}
 
-	public function testAppend() {
+	public function testPushPop() {
 		$conf = new ConfigurationFixture();
-		$pushed = $conf->append('queue', 'first_val');
+		$pushed = $conf->push('queue', 'first_val');
 		$this->assertTrue($pushed->hasOption('queue'));
 		$this->assertInternalType('array', $pushed->getOption('queue'));
 		$this->assertCount(1, $pushed->getOption('queue'));
 		$this->assertContains('first_val', $pushed->getOption('queue'));
-		$pushed = $pushed->append('queue', 'second_val');
+		$pushed = $pushed->push('queue', 'second_val');
 		$this->assertCount(2, $pushed->getOption('queue'));
 		$this->assertContains('first_val', $pushed->getOption('queue'));
 		$this->assertContains('second_val', $pushed->getOption('queue'));
 
+		$conf = new ConfigurationFixture();
+		$conf->preserveInstance = true;
+		$conf->push('queue', 'first_val');
+		$conf->push('queue', 'second_val');
+		$pop = $conf->pop('queue');
+		$this->assertEquals('second_val', $pop);
+		$pop = $conf->pop('queue');
+		$this->assertEquals('first_val', $pop);
+		$pop = $conf->pop('queue');
+		$this->assertNull($pop);
 
 		$conf = new ConfigurationFixture();
+		$extra = $conf->option('test', 'value');
+		$pop = $extra->pop('test');
+		$this->assertEquals('value', $pop);
+		$pop = $extra->pop('test');
+		$this->assertNull($pop);
+		
+		$conf = new ConfigurationFixture();
+		$pop = $conf->pop('empty');
+		$this->assertNull($pop);
+		
+		$conf = new ConfigurationFixture();
 		$conf->setConfig(['queue' => 'first_val']);
-		$pushed = $conf->append('queue', 'second_val', 'third_val');
+		$pushed = $conf->push('queue', 'second_val', 'third_val');
 		$this->assertCount(3, $pushed->getOption('queue'));
 		$this->assertContains('first_val', $pushed->getOption('queue'));
 		$this->assertContains('second_val', $pushed->getOption('queue'));
@@ -112,7 +133,7 @@ class FluentInterfaceTest extends \PHPUnit_Framework_TestCase {
 		$this->assertEquals('val3', $conf->getOption('test3'));
 		$conf->discard('test4');
 		$this->assertFalse($conf->hasOption('test4'));
-		$conf->append('values', 1, 2, 3);
+		$conf->push('values', 1, 2, 3);
 		$this->assertEquals([1, 2, 3], $conf->getOption('values'));
 	}
 }

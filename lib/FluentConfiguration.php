@@ -33,15 +33,23 @@ trait FluentConfiguration {
 	}
 	
 	/**
+	 * Validates an option name
+	 * @param string $name
+	 * @throws \InvalidArgumentException
+	 */
+	protected function validateName($name) {
+		if (!is_string($name) || empty($name))
+			throw new \InvalidArgumentException("Option name must be a valid string");
+	}
+	
+	/**
 	 * Declares a non-transient configuration value
 	 * @param string $name
 	 * @param mixed $value
 	 * @throws \InvalidArgumentException
 	 */
 	public function setOption($name, $value) {
-		if (!is_string($name) || empty($name))
-			throw new \InvalidArgumentException("Option name must be a valid string");
-	
+		$this->validateName($name);
 		$this->config[$name] = $value;
 	}
 	
@@ -52,9 +60,7 @@ trait FluentConfiguration {
 	 * @return mixed
 	 */
 	public function getOption($name) {
-		if (!is_string($name) || empty($name))
-			throw new \InvalidArgumentException("Option name must be a valid string");
-	
+		$this->validateName($name);
 		if (array_key_exists($name, $this->config))
 			return $this->config[$name];
 	
@@ -76,7 +82,7 @@ trait FluentConfiguration {
 	 * @param array $values
 	 * @param boolean $invert
 	 * @throws \InvalidArgumentException
-	 * @return FluentConfiguration
+	 * @return \FluentConfiguration
 	 */
 	public function merge(array $values, $invert = false) {
 		$obj = $this->preserveInstance ? $this : clone $this;
@@ -87,7 +93,7 @@ trait FluentConfiguration {
 	/**
 	 * Creates a copy of this object removing the given configuration options
 	 * Ex: $config->discard('map.type, 'map.params');
-	 * @return FluentConfiguration
+	 * @return \FluentConfiguration
 	 */
 	public function discard() {
 		$filter = array_flip(func_get_args());
@@ -102,42 +108,58 @@ trait FluentConfiguration {
 	 * @param string $name
 	 * @param mixed $value
 	 * @throws \InvalidArgumentException
-	 * @return FluentConfiguration
+	 * @return \FluentConfiguration
 	 */
 	public function option($name, $value) {
-		if (!is_string($name) || empty($name))
-			throw new \InvalidArgumentException("Option name must be a valid string");
-	
+		$this->validateName($name);
 		return $this->merge([$name => $value]);
 	}
 	
 	/**
-	 * Appends a configuration value to an existing key
-	 * Ex: $conf->setOption('test', 1); $newconf = $conf->append('test', 2);
-	 * @param string $key
-	 * @param mixed $value
-	 * @return FluentConfiguration
+	 * Pushes a list of values to a configuration key
+	 * Ex: $config->push('list', 'a', 'b', c')
+	 * @param string $name
+	 * @return \FluentConfiguration
 	 */
-	public function append($key, $value) {
-		if (!is_string($key) || empty($key)) {
-			throw new \InvalidArgumentException("Option name must be a valid string");
-		}
-
-		$args = func_get_args();
-		array_shift($args);		
+	public function push($name) {
+		$this->validateName($name);
 		$obj = $this->preserveInstance ? $this : clone $this;
+		$args = func_get_args();
+		array_shift($args);
+		if (empty($args))
+			return 0;
 		
-		if (array_key_exists($key, $obj->config)) {
-			if (!is_array($obj->config[$key]))
-				$obj->config[$key] = [$obj->config[$key]];
+		if (!array_key_exists($name, $obj->config))
+			$obj->config[$name] = $args;
+		else {
+			if (!is_array($obj->config[$name]))
+				$obj->config[$name] = [$obj->config[$name]];
 			
-			foreach ($args as $arg)
-				array_push($obj->config[$key], $arg);
+			foreach($args as $arg)
+				$obj->config[$name][] = $arg; //faster than array_push
 		}
-		else
-			$obj->config[$key] = $args;
-	
+		
 		return $obj;
 	}
+	
+	/**
+	 * Pops one element off the end of a configuration value
+	 * Ex: $value = $conf->pop('key');
+	 * @param string $name
+	 * @return mixed
+	 */
+	public function pop($name) {
+		$this->validateName($name);
+		
+		if (!array_key_exists($name, $this->config))
+			return null;
+		
+		if (!is_array($this->config[$name])) {
+			$value = $this->config[$name];
+			unset($this->config[$name]);
+			return $value;
+		}
+		
+		return array_pop($this->config[$name]);
+	}
 }
-?>

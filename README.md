@@ -6,6 +6,13 @@ A fluent configuration trait for PHP
 [![Build Status](https://travis-ci.org/emaphp/fluent-configuration.svg)](https://travis-ci.org/emaphp/fluent-configuration)
 
 <br/>
+###Changelog
+
+**2014-02-23**
+ * Modified: Method 'append' renamed to push.
+ * Added: Method 'pop'.
+
+<br/>
 ###Installation
 
 **composer.json**
@@ -13,7 +20,7 @@ A fluent configuration trait for PHP
 ```json
 {
     "require": {
-        "emaphp/fluent-configuration": "1.1.*"
+        "emaphp/fluent-configuration": "1.2.*"
     }
 }
 ```
@@ -62,11 +69,12 @@ $config->hasOption('test1'); // false
 $config->hasOption('test3'); // false
 $config->hasOption('test4'); // true
 
-//append
+//push & pop
 $config = new ConfigurationContainer();
 $config->setOption('list', 'item1');
-$config = $config->append('list', 'item2', 'item3');
+$config = $config->push('list', 'item2', 'item3');
 $config->getOption('list'); // ['item1', 'item2', 'item3']
+$value = $config->pop('list'); // 'item3'
 
 //preserve instance
 $config = new ConfigurationContainer();
